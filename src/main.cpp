@@ -1,16 +1,16 @@
 #include <iostream>
-#include "odrive_cpp_sdk/odrive_cpp_sdk.h"
+#include "odrive_cpp_sdk.h"
 
 int main(int argc, const char * argv[]) {
-  std::string odrive_serial_numbers[1] = {"56402337936694"};
-  std::string odrive_serial_numbers_map[2] = {"56402337936694","56402337936694"};
+  std::string odrive_serial_numbers[1] = {"35700616219979"};
+  std::string odrive_serial_numbers_map[2] = {"35700616219979","35700616219979"};
   int16_t zeroeth_radian_in_encoder_ticks_[2] = { -200, 0 };
 
   bool odrive_position_per_motor[2] = {false, true};
   bool motor_relative_to_prior_motor[2] = {false, false};
   // odrive_encoder_ticks_per_radian_per_motor lets us account for any gear reductions...
   float odrive_encoder_ticks_per_radian_per_motor[2] = { 57.2958 * (2048 * 4) / 360.0, 57.2958 * (2048 * 4) / 360.0 };
-  odrive::CppSdk odrive_cpp_sdk(
+  odrive::Channel odrive_cpp_sdk(
         odrive_serial_numbers,
         1,
         odrive_serial_numbers_map,
