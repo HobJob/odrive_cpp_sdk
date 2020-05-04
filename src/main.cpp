@@ -1,6 +1,21 @@
 #include <iostream>
 #include "odrive_cpp_sdk.h"
+#include "robot.h"
 
+//valgrind --leak-check=full --show-leak-kinds=all ./odrive_test
+int main(int argc, const char * argv[]){
+    Robot r = Robot();
+    //auto *m0 = new Motor(M0);
+    //auto *m1 = new Motor(M1);
+
+    //Start the odrive defining the brake resitance
+    r.odrives[0]->init(0.5);
+
+    //r.odrives[0]->addMotor(m0);
+    //r.odrives[0]->addMotor(m1);
+} 
+
+/*
 int main(int argc, const char * argv[]) {
   std::string odrive_serial_numbers[1] = {"35700616219979"};
   std::string odrive_serial_numbers_map[2] = {"35700616219979","35700616219979"};
@@ -57,3 +72,4 @@ int main(int argc, const char * argv[]) {
   //    result = odrive_cpp_sdk.readCurrentMotorPositions(odrive_motor_current_positions);
   //    std::cout << "odrive_cpp_sdk.readCurrentMotorPositions got result:" << result << " and value: [" << std::to_string(odrive_motor_current_positions[0]) << "," << std::to_string(odrive_motor_current_positions[1]) << "]" << std::endl;
   }
+*/

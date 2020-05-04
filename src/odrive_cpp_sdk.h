@@ -10,42 +10,6 @@
 
 typedef std::vector<uint8_t> commBuffer;
 
-#define ODRIVE_SDK_USB_VENDORID     4617 //decimal for 0x1209
-
-#define ODRIVE_SDK_USB_PRODUCTID_0     3379 // mac
-#define ODRIVE_SDK_USB_PRODUCTID_1     3378 // linux?
-
-#define ODRIVE_SDK_PROTOCOL_VERION 1
-#define ODRIVE_SDK_DEFAULT_CRC_VALUE 13145  // found with running odrivetools -v and outputting my own information
-#define ODRIVE_SDK_MAX_BYTES_TO_RECEIVE 64
-#define ODRIVE_SDK_TIMEOUT 1000
-#define ODRIVE_SDK_MAX_RESULT_LENGTH 100
-#define ODRIVE_SDK_LIBUSB_ISERIAL_LENGTH 256
-
-#define ODRIVE_SDK_SCAN_SUCCESS 0
-#define ODRIVE_SDK_ODRIVE_WITH_SERIAL_NUMBER_NOT_FOUND 1
-#define ODRIVE_SDK_SERIAL_NUMBER_MAP_INVALID 2
-#define ODRIVE_SDK_UNEXPECTED_RESPONSE 3
-#define ODRIVE_SDK_NOT_INITIALIZED 4
-#define ODRIVE_SDK_COMM_SUCCESS 0
-
-#define ODRIVE_SDK_SERIAL_NUMBER_CMD 2
-#define ODRIVE_SDK_VBUS_VOLTAGE_CMD 1
-
-#define ODRIVE_SDK_WRITING_ENDPOINT 3 // found with running odrivetools -v
-#define ODRIVE_SDK_READING_ENDPOINT 131 // found with running odrivetools -v
-
-#define ODRIVE_SDK_SET_GOAL_0_CMD 31 // found with running odrivetools -v
-#define ODRIVE_SDK_SET_GOAL_1_CMD 131 // found with running odrivetools -v
-
-#define ODRIVE_SDK_GET_ENCODER_0_STATE 79 // found with running odrivetools -v
-#define ODRIVE_SDK_GET_ENCODER_1_STATE 179 // found with running odrivetools -v
-
-#define ODRIVE_SDK_GET_MOTOR_0_ERROR 30 // found with running odrivetools -v
-#define ODRIVE_SDK_GET_MOTOR_1_ERROR 130 // found with running odrivetools -v
-
-#define ODRIVE_SDK_MOTOR_NO_ERROR_STATUS 0 // what odrive would return when no motor errors
-
 
 namespace odrive
 {

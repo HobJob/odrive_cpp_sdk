@@ -8,10 +8,9 @@ find_package(PkgConfig REQUIRED)
 pkg_search_module(LIBUSB1 REQUIRED libusb-1.0)
 include_directories(SYSTEM ${LIBUSB1_INCLUDE_DIRS})
 
-add_library(odrive_cpp_sdk src/odrive_cpp_sdk.cpp src/odrive_cpp_sdk.h src/robot.cpp src/robot.h)
+add_library(odrive_cpp_sdk src/robot.cpp src/robot.h src/motor.cpp src/motor.h src/ODrive.cpp src/ODrive.h src/channel.cpp src/channel.h)
 
 target_link_libraries(odrive_cpp_sdk ${LIBUSB1_LIBRARIES})
-
 
 add_executable(odrive_test
   src/main.cpp
