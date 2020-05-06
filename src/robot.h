@@ -10,6 +10,8 @@
 #include "channel.h"
 #include "ODrive.h"
 
+class ODrive;
+
 class Robot{
 public:
     Robot();
@@ -17,12 +19,17 @@ public:
 
     std::vector<ODrive*> odrives;
 
+    int reconnectODrive(ODrive *oldOdrive);
+
+    void configureODrive(ODrive *&pDrive, Motor *pMotor, Motor *pMotor1);
+
 private:
 
     //USB stuff
     libusb_context* libusb_context_;
 
     int lookAndCreateODrives();
+
 
 };
 

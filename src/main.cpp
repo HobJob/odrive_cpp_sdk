@@ -1,19 +1,75 @@
 #include <iostream>
-#include "odrive_cpp_sdk.h"
 #include "robot.h"
+#include "dualshock.h"
+#include <thread>
+
+
 
 //valgrind --leak-check=full --show-leak-kinds=all ./odrive_test
 int main(int argc, const char * argv[]){
+
+    std::thread remote_thread(&dualshock_main);
+
     Robot r = Robot();
-    //auto *m0 = new Motor(M0);
-    //auto *m1 = new Motor(M1);
+    auto *m0 = new Motor(M0);
+    auto *m1 = new Motor(M1);
 
-    //Start the odrive defining the brake resitance
-    r.odrives[0]->init(0.5);
+    //Check if there is any odrive connected.
+    if(r.odrives.empty()) return -1;
+    auto odrive = r.odrives[0];
 
-    //r.odrives[0]->addMotor(m0);
-    //r.odrives[0]->addMotor(m1);
-} 
+    //Load the default configuration for 2 TAROT MT4008 motors.
+    //r.configureODrive(odrive, m0, m1);
+
+    //Configure both motors
+    odrive->configureMotor(m0);
+    odrive->configureMotor(m1);
+
+    float voltage = odrive->inputVoltage();
+    std::cout <<"Voltage after is " << voltage << std::endl;
+
+    odrive->m0->setControlMode(CTRL_MODE_POSITION_CONTROL);
+    odrive->m0->setRequestedState(AXIS_STATE_CLOSED_LOOP_CONTROL);
+
+    bool stopProgram;
+    bool stuff = false;
+    float setpoint = 0.0f;
+    float speed = 1.0f;
+    bool oneTime = true;
+
+    do{
+        bool stopMotors = getStopMotors();
+
+        if(stopMotors){
+            odrive->m0->disable();
+            odrive->m1->disable();
+            oneTime = true;
+        }else{
+            if(oneTime){
+                odrive->m0->enable();
+                odrive->m1->enable();
+                oneTime = false;
+            }
+        }
+
+        stopProgram     = getStopProgram();
+        odrive->m0->setPositionSetpoint(setpoint);
+        setpoint += speed;
+        if(setpoint >= 2000.0f|| setpoint <= 0.0f){
+            speed *= -1;
+        }
+        //float poseEstimate = odrive->m0->getPosEstimate();
+        //std::cout <<"Pose estimate" << poseEstimate << std::endl;
+        usleep(10000);
+    }while(!stopProgram);
+
+    odrive->m0->disable();
+    odrive->m1->disable();
+
+    remote_thread.join();
+    return 0;
+}
+
 
 /*
 int main(int argc, const char * argv[]) {
