@@ -3,6 +3,9 @@
 
 #include <stdint.h>
 #include "channel.h"
+#include <stdlib.h> 
+
+#include <math.h>
 
 //From enums.py
 #define MOTOR_TYPE_HIGH_CURRENT 0
@@ -13,7 +16,7 @@ enum MOTOR_NAME{
 };
 
 class Channel;
-//TODO: Maybe more indicated to rename it to Axis.
+
 class Motor{
 
 public:
@@ -23,8 +26,9 @@ public:
         int max_rpm = 7920,
         int max_current = 25,
         float kV = 330.0f,
-        float calibration_current = 5,
-        float current_limit = 5,
+        float calibration_current = 5.0f,
+        float current_limit = 5.0f,
+        float current_range = 6.0f,
         int motor_type = MOTOR_TYPE_HIGH_CURRENT);
     
     ~Motor();
@@ -41,9 +45,13 @@ public:
     float kV; //330
     float calibration_current; //5
     float current_limit; //5
-    void disable();
+    float current_range; //6
 
     int motor_type;
+
+    float zeroOffset;
+
+    void disable();
 
     void setCurrentSetpoint(float newSetpoint);
 
@@ -66,10 +74,26 @@ public:
     void setControlMode(int controlMode);
 
     void enable();
+    
+    void moveStartingPosition(double delayBetweenSteps);
 
     int requestedState;
 
     void setPositionSetpoint(float newSetpoint);
+
+    void setTorque(float d);
+
+    float castCPRToRad(float cpr);
+    float castCPRToRads(float cpr);
+    float castRadsToCPR(float rads);
+    
+
+    float castCurrentToTorque(float current);
+    float castTorqueToCurrent(float torque);
+
+    float getPosEstimateInRad();
+    float getVelEstimateInRads();
+    void zeroPosition();
 };
 
 #endif //MOTOR_TFG_ADRIA

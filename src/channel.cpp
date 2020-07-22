@@ -136,8 +136,11 @@ int Channel::odriveEndpointRequest(int endpoint_id, commBuffer& received_payload
 
   // Send the packet
   commBuffer packet = createODrivePacket(seq_no, endpoint_id, length, payload);
+  
+  std::unique_lock<std::mutex>lck (tx_mutex);
 
   int result = libusb_bulk_transfer(device_handle, ODRIVE_SDK_WRITING_ENDPOINT, packet.data(), packet.size(), &sent_bytes, 0);
+  
   if (result != LIBUSB_SUCCESS) {
     std::cerr << "Could not call libusb_bulk_transfer for writing: " << result << " - " << libusb_error_name(result) << strerror(errno) << std::endl;
     return result;
@@ -146,8 +149,9 @@ int Channel::odriveEndpointRequest(int endpoint_id, commBuffer& received_payload
   }
 
   if (ack) {
-    // Immediatly wait for response from Odrive and check if ack (if we asked for one)
+    // Immediatly waituint8 for response from Odrive and check if ack (if we asked for one)
     result = libusb_bulk_transfer(device_handle, ODRIVE_SDK_READING_ENDPOINT, receive_bytes, ODRIVE_SDK_MAX_BYTES_TO_RECEIVE, &received_bytes, ODRIVE_SDK_TIMEOUT);
+    lck.unlock();
     if (result != LIBUSB_SUCCESS) {
       std::cerr << "Could not call libusb_bulk_transfer for reading: " << result << " - " << libusb_error_name(result) << strerror(errno) << std::endl;
       return result;
@@ -165,7 +169,10 @@ int Channel::odriveEndpointRequest(int endpoint_id, commBuffer& received_payload
 
     // return the response payload
     received_length = received_payload.size();
+  }else{
+    lck.unlock();
   }
+
 
   return LIBUSB_SUCCESS;
 }
@@ -203,6 +210,7 @@ int Channel::odriveEndpointGetUInt8(int endpoint_id, uint8_t& value) {
   commBuffer receive_payload;
   int received_length;
   int result = odriveEndpointRequest(endpoint_id, receive_payload, received_length, send_payload, 1, 1);
+  //std::cout << "Received payload size is " << received_length<< std::endl;
   if (result != LIBUSB_SUCCESS) {
     return result;
   }
@@ -416,13 +424,13 @@ commBuffer Channel::decodeODrivePacket(commBuffer& buf, short& seq_no, commBuffe
 
 
 //Wait for the ODrive to finish an endpoint operation.
-void Channel::wait(int endpoint, int newValue) {
+void Channel::waituint8(int endpoint, uint8_t newValue) {
     uint8_t endpoint_result;
     bool loopCondition;
 
     std::cout << "\tWaiting for an operation to start " << std::flush;
 
-    //Initially wait until the ODrive starts the task
+    //Initially waituint8 until the ODrive starts the task
     do{
         odriveEndpointGetUInt8(endpoint, endpoint_result);
         loopCondition = endpoint_result == newValue;
@@ -433,6 +441,14 @@ void Channel::wait(int endpoint, int newValue) {
             usleep(100000);
         }
     }while(loopCondition);
+
+    waitOperationFinisheduint8(endpoint, newValue);
+    std::cout << std::endl << "\tWait finished!" << std::endl;
+}
+
+void Channel::waitOperationFinisheduint8(int endpoint, uint8_t  newValue){
+    uint8_t endpoint_result;
+    bool loopCondition;
 
     std::cout << std::endl << "\tWaiting for an operation to finish " << std::flush;
     //Wait untill it finishes the task
@@ -448,5 +464,4 @@ void Channel::wait(int endpoint, int newValue) {
         }
     }while (loopCondition);
 
-    std::cout << std::endl << "\tWait finished!" << std::endl;
 }

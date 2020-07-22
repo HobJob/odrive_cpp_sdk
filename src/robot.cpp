@@ -1,13 +1,13 @@
 #include "robot.h"
 
+
 Robot::Robot(){
     libusb_context_ = nullptr;
-
 
     int result = lookAndCreateODrives();
 
     if (result < 0) {
-        std::cerr << "BIG PAPA" << std::endl;
+        std::cerr << "Error creating odrives" << std::endl;
     }
 }
 
@@ -19,6 +19,11 @@ Robot::~Robot(){
     odrives.clear();
 
     if (libusb_context_) { libusb_exit(libusb_context_); }
+}
+
+void Robot::set_dt(double dt)
+{
+    this->dt = dt;
 }
 
 //Creates a new channel for the ODrive, given a SerialNumber.
@@ -220,7 +225,7 @@ void Robot::configureODrive(ODrive *&odrive, Motor *m0, Motor *m1) {
 
     //Configure both motors
     odrive->configureMotor(m0);
-    odrive->configureMotor(m1);
+    //odrive->configureMotor(m1);
 
     //Calibrate the motors
     odrive->calibrateMotorsAndEncoders();
@@ -231,4 +236,39 @@ void Robot::configureODrive(ODrive *&odrive, Motor *m0, Motor *m1) {
     //Save and reboot to make persistent the changes.
     odrive->saveConfiguration();
     odrive->reboot();
+}
+
+void Robot::moveWithPosition(std::vector<double> xs)
+{
+    auto odrive = this->odrives[0];
+
+    odrive->m0->setControlMode(CTRL_MODE_POSITION_CONTROL);
+    odrive->m0->setRequestedState(AXIS_STATE_CLOSED_LOOP_CONTROL);
+    odrive->m0->moveStartingPosition(150);
+    
+    for(auto x : xs){
+        auto start = std::chrono::high_resolution_clock::now();
+        float pos = (x * 2000.0f) / (2.0f * (float)M_PI) - 1000.0f;
+       
+        odrive->m0->setPositionSetpoint(pos);
+       
+        auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+        usleep((dt * 1000000.0f) - ((float)microseconds));
+    }
+}
+void Robot::moveWithCurrent(std::vector<double> us)
+{
+    auto odrive = this->odrives[0];
+    odrive->m0->setControlMode(CTRL_MODE_CURRENT_CONTROL);
+    odrive->m0->setRequestedState(AXIS_STATE_CLOSED_LOOP_CONTROL);
+    for(auto u : us){
+        
+        auto start = std::chrono::high_resolution_clock::now();
+        odrive->m0->setTorque(u);
+    
+        auto elapsed = std::chrono::high_resolution_clock::now() - start;
+        long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
+        usleep((dt * 1000000.0f) - ((float)microseconds));
+    }
 }
