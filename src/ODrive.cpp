@@ -51,7 +51,6 @@ void ODrive::addMotor(Motor *m){
 }
 
 
-//TODO: REFACTOR ALL THE #DEFINE thing. Use instead the JSON and a helper function to look for the correct endpoint ID.
 void ODrive::configureMotor(Motor *m) {
     if (m->name == M0){
         this->m0 = m;

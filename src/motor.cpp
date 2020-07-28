@@ -29,7 +29,7 @@ void Motor::moveStartingPosition(double delayBetweenSteps)
     this->setControlMode(CTRL_MODE_POSITION_CONTROL);
 
     float pos;
-    channel->odriveEndpointGetFloat(this->name == M0 ? M0_POS_ESTIMATE : M1_POS_ESTIMATE,pos);   
+    channel->odriveEndpointGetFloat(this->name == M0 ? M0_POS_ESTIMATE : M1_POS_ESTIMATE, pos);   
     
 
     int sign = (pos > 0) - (pos < 0);
