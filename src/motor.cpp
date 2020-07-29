@@ -132,7 +132,7 @@ float Motor::getPosEstimateInRad()
 {
     float pos;
     channel->odriveEndpointGetFloat(this->name == M0 ? M0_POS_ESTIMATE : M1_POS_ESTIMATE,pos);
-    return (pos - zeroOffset) * 0.003141592654 + M_PI +0.07;
+    return (pos - zeroOffset) * 0.003141592654 + M_PI;
 }
 float Motor::getVelEstimateInRads()
 {
