@@ -13,9 +13,12 @@
 
 class ODrive;
 
+enum robot_type {SINGLE_PENDULUM, DOUBLE_PENDULUM};
+
 class Robot{
 public:
     Robot();
+    Robot(robot_type type, double dt);
     ~Robot();
 
     std::vector<ODrive*> odrives;
@@ -29,10 +32,14 @@ public:
     void set_dt(double dt);
 
 private:
+    
+    double dt;
 
     //USB stuff
     libusb_context* libusb_context_;
-    double dt;
+
+    robot_type pendulum_type;
+    
 
     int lookAndCreateODrives();
 };

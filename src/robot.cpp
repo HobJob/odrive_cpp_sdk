@@ -1,11 +1,22 @@
 #include "robot.h"
 
 
-Robot::Robot(){
+Robot::Robot(robot_type type, double dt){
+    this->dt = dt;
+    this->pendulum_type = type;
+    
     libusb_context_ = nullptr;
-
     int result = lookAndCreateODrives();
 
+    if (result < 0) {
+        std::cerr << "Error creating odrives" << std::endl;
+    }
+}
+Robot::Robot(){
+    
+    libusb_context_ = nullptr;
+    int result = lookAndCreateODrives();
+    dt = 0;
     if (result < 0) {
         std::cerr << "Error creating odrives" << std::endl;
     }
@@ -225,7 +236,7 @@ void Robot::configureODrive(ODrive *&odrive, Motor *m0, Motor *m1) {
 
     //Configure both motors
     odrive->configureMotor(m0);
-    //odrive->configureMotor(m1);
+    odrive->configureMotor(m1);
 
     //Calibrate the motors
     odrive->calibrateMotorsAndEncoders();
