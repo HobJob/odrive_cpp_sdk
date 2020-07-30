@@ -124,21 +124,21 @@ float Motor::getTorque(){
 
 float Motor::getPosEstimate(){
     float pos;
-    channel->odriveEndpointGetFloat(this->name == M0 ? M0_POS_ESTIMATE : M1_POS_ESTIMATE,pos);
+    channel->odriveEndpointGetFloat(this->name == M0 ? M0_POS_ESTIMATE : M1_POS_ESTIMATE, pos);
     return pos - zeroOffset;
 }
 
 float Motor::getPosEstimateInRad()
 {
     float pos;
-    channel->odriveEndpointGetFloat(this->name == M0 ? M0_POS_ESTIMATE : M1_POS_ESTIMATE,pos);
-    return (pos - zeroOffset) * 0.003141592654 + M_PI;
+    channel->odriveEndpointGetFloat(this->name == M0 ? M0_POS_ESTIMATE : M1_POS_ESTIMATE, pos);
+    return (pos - zeroOffset) * M_PI_DIVIDED_1000 + M_PI;
 }
 float Motor::getVelEstimateInRads()
 {
     float vel;
     channel->odriveEndpointGetFloat(this->name == M0 ? M0_ENCODER_VEL_ESTIMATE : M1_ENCODER_VEL_ESTIMATE, vel);
-    return vel * 0.003141592654;
+    return vel * M_PI_DIVIDED_1000;
 }
 
 void Motor::setRequestedState(int newState) {
@@ -163,7 +163,7 @@ void Motor::setPositionSetpoint(float newSetpoint) {
 }
 
 void Motor::setTorque(float torque) {
-    float current = torque * this->kV / 8.27;
+    float current = torque * this->kV / 8.27f;
     //std::cout << "Current is " << current << std::endl;
     channel->odriveEndpointSetFloat(this->name == M0 ? M0_CONTROLLER_CURRENT_SETPOINT : M1_CONTROLLER_CURRENT_SETPOINT, current);
 }

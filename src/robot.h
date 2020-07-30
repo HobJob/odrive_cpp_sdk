@@ -24,7 +24,7 @@ public:
 
     void configureODrive(ODrive *&pDrive, Motor *pMotor, Motor *pMotor1);
     
-    void moveWithCurrent(std::vector<double> us);
+    void executeTrajectoryOpenLoop(std::vector<double> us);
     void moveWithPosition(std::vector<double> xs);
     void set_dt(double dt);
 
