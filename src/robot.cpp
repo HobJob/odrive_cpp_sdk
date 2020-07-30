@@ -268,16 +268,29 @@ void Robot::moveWithPosition(std::vector<double> xs)
         usleep((dt * 1000000.0f) - ((float)microseconds));
     }
 }
-void Robot::executeTrajectoryOpenLoop(std::vector<double> us)
+
+void Robot::executeTrajectoryOpenLoop(std::vector<Eigen::VectorXd> us)
 {
     auto odrive = this->odrives[0];
+    int us_size = us.size();
+
     odrive->m0->setControlMode(CTRL_MODE_CURRENT_CONTROL);
     odrive->m0->setRequestedState(AXIS_STATE_CLOSED_LOOP_CONTROL);
-    for(auto u : us){
+
+    if(us_size  != 1)
+        odrive->m1->setControlMode(CTRL_MODE_CURRENT_CONTROL);
+        odrive->m1->setRequestedState(AXIS_STATE_CLOSED_LOOP_CONTROL);
+
+    for(auto &u : us){
         
         auto start = std::chrono::high_resolution_clock::now();
-        odrive->m0->setTorque(u);
-    
+        
+        odrive->m0->setTorque(u[0]);
+        
+        if(us_size != 1){
+            odrive->m1->setTorque(u[1]);
+        }
+
         auto elapsed = std::chrono::high_resolution_clock::now() - start;
         long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
         usleep((dt * 1000000.0f) - ((float)microseconds));
