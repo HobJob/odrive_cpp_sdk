@@ -268,7 +268,7 @@ void Robot::moveWithPosition(std::vector<double> xs)
         usleep((dt * 1000000.0f) - ((float)microseconds));
     }
 }
-void Robot::moveWithCurrent(std::vector<double> us)
+void Robot::executeTrajectoryOpenLoop(std::vector<double> us)
 {
     auto odrive = this->odrives[0];
     odrive->m0->setControlMode(CTRL_MODE_CURRENT_CONTROL);
