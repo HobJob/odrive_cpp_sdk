@@ -184,8 +184,6 @@ private:
 
     static commBuffer createODrivePacket(short seq_no, int endpoint, short response_size, const commBuffer& payload_ref);
     static commBuffer decodeODrivePacket(commBuffer& buf, short& seq_no, commBuffer& received_packet);
-
-
 };
 
 

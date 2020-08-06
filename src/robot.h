@@ -11,14 +11,17 @@
 #include "ODrive.h"
 #include <chrono>
 
-class ODrive;
+#include <Eigen/Core>
+#include "Graph_Logger.h"
 
-enum robot_type {SINGLE_PENDULUM, DOUBLE_PENDULUM};
+class ODrive;
+class Graph_Logger;
+class Motor;
 
 class Robot{
 public:
     Robot();
-    Robot(robot_type type, double dt);
+    Robot(double dt);
     ~Robot();
 
     std::vector<ODrive*> odrives;
@@ -28,7 +31,7 @@ public:
     void configureODrive(ODrive *&pDrive, Motor *pMotor, Motor *pMotor1);
     
     
-    void executeTrajectoryOpenLoop(std::vector<Eigen::VectorXd> us);
+    void executeTrajectoryOpenLoop(std::vector<Eigen::VectorXd> us, Graph_Logger *graph_logger);
 
     void moveWithPosition(std::vector<double> xs);
     void set_dt(double dt);
@@ -39,10 +42,7 @@ private:
 
     //USB stuff
     libusb_context* libusb_context_;
-
-    robot_type pendulum_type;
     
-
     int lookAndCreateODrives();
 };
 

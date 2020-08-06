@@ -52,6 +52,8 @@ void ODrive::addMotor(Motor *m){
 
 
 void ODrive::configureMotor(Motor *m) {
+    if(!m) return;
+    
     if (m->name == M0){
         this->m0 = m;
         this->m0->channel = channel;
@@ -195,6 +197,7 @@ void ODrive::reboot(){
     //Give some time to the ODrive to boot again.
     std::cout<< "Rebooting ODrive... Sleeping for " << REBOOT_SLEEP_TIME <<std::endl;
     usleep(REBOOT_SLEEP_TIME);
+    std::cout << "Wait done. Reconnecting..." << std::endl;
     robot->reconnectODrive(this);
 }
 

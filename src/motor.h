@@ -2,15 +2,14 @@
 #define MOTOR_TFG_ADRIA
 
 #include <stdint.h>
-#include "channel.h"
 #include <stdlib.h> 
-
 #include <math.h>
+
+#include "channel.h"
 
 //From enums.py
 #define MOTOR_TYPE_HIGH_CURRENT 0
 #define M_PI_DIVIDED_1000 (M_PI / 1000.0f)
-
 
 
 enum MOTOR_NAME{
@@ -27,9 +26,9 @@ public:
     Motor(MOTOR_NAME name, int encoder_cpr = 2000, int encoder_max_rpm = 14500,
         uint8_t pole_pairs = 12,
         int max_rpm = 7920,
-        int max_current = 25,
+        int motor_max_current = 25,
         float kV = 330.0f,
-        float calibration_current = 5.0f,
+        float calibration_current = 10.0f,
         float current_limit = 5.0f,
         float current_range = 6.0f,
         int motor_type = MOTOR_TYPE_HIGH_CURRENT);
@@ -38,13 +37,14 @@ public:
 
     MOTOR_NAME name;
     Channel *channel;
-    
+    Motor *otherMotor;
+
     int encoder_cpr; //2000
     int encoder_max_rpm; //14500
 
     int32_t pole_pairs; //12
     int max_rpm; //7920
-    int max_current; //25
+    int motor_max_current; //25
     float kV; //330
     float calibration_current; //5
     float current_limit; //5
@@ -77,14 +77,15 @@ public:
     void setControlMode(int controlMode);
 
     void enable();
-    
     void moveStartingPosition(double delayBetweenSteps);
+    void moveStartingPosition(double delayBetweenSteps, bool * signalFlag);
 
     int requestedState;
 
     void setPositionSetpoint(float newSetpoint);
 
-    void setTorque(float d);
+    void setTorque(float torque);
+    void setTorqueDoublePendulum(float torque);
 
     float castCPRToRad(float cpr);
     float castCPRToRads(float cpr);
@@ -96,7 +97,12 @@ public:
 
     float getPosEstimateInRad();
     float getVelEstimateInRads();
+
+    float getPosEstimateInRadDoublePendulum();
+
     void zeroPosition();
+
+    void setOtherMotor(Motor * otherMotor);
 };
 
 #endif //MOTOR_TFG_ADRIA

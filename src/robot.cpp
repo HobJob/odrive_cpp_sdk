@@ -1,10 +1,8 @@
 #include "robot.h"
 
 
-Robot::Robot(robot_type type, double dt){
+Robot::Robot(double dt){
     this->dt = dt;
-    this->pendulum_type = type;
-    
     libusb_context_ = nullptr;
     int result = lookAndCreateODrives();
 
@@ -235,8 +233,8 @@ void Robot::configureODrive(ODrive *&odrive, Motor *m0, Motor *m1) {
     odrive->setBrakeResistance(0.5);
 
     //Configure both motors
-    odrive->configureMotor(m0);
-    odrive->configureMotor(m1);
+    if(m0) odrive->configureMotor(m0);
+    if(m1) odrive->configureMotor(m1);
 
     //Calibrate the motors
     odrive->calibrateMotorsAndEncoders();
@@ -269,15 +267,17 @@ void Robot::moveWithPosition(std::vector<double> xs)
     }
 }
 
-void Robot::executeTrajectoryOpenLoop(std::vector<Eigen::VectorXd> us)
+void Robot::executeTrajectoryOpenLoop(std::vector<Eigen::VectorXd> us, Graph_Logger* graph_logger)
 {
     auto odrive = this->odrives[0];
-    int us_size = us.size();
+    int us_size = us[0].size();
+
+    std::cout << "Us size is " << us[0][0] << " " << us[0][1] << std::endl;
 
     odrive->m0->setControlMode(CTRL_MODE_CURRENT_CONTROL);
     odrive->m0->setRequestedState(AXIS_STATE_CLOSED_LOOP_CONTROL);
 
-    if(us_size  != 1)
+    if(us_size != 1)
         odrive->m1->setControlMode(CTRL_MODE_CURRENT_CONTROL);
         odrive->m1->setRequestedState(AXIS_STATE_CLOSED_LOOP_CONTROL);
 
@@ -285,11 +285,23 @@ void Robot::executeTrajectoryOpenLoop(std::vector<Eigen::VectorXd> us)
         
         auto start = std::chrono::high_resolution_clock::now();
         
-        odrive->m0->setTorque(u[0]);
+        odrive->m0->setTorque(u[1]);
         
         if(us_size != 1){
-            odrive->m1->setTorque(u[1]);
+            odrive->m1->setTorque(u[0]);
         }
+        
+        graph_logger->appendToBuffer("computed currents m0", odrive->m0->castTorqueToCurrent(u[1]));
+        graph_logger->appendToBuffer("computed currents m1", odrive->m1->castTorqueToCurrent(u[0]));
+        
+        graph_logger->appendToBuffer("ODrive real position m0", odrive->m0->getPosEstimateInRad());
+        graph_logger->appendToBuffer("ODrive real position m1", odrive->m1->getPosEstimateInRad());
+
+        graph_logger->appendToBuffer("ODrive real velocity m0", odrive->m0->getVelEstimateInRads());
+        graph_logger->appendToBuffer("ODrive real velocity m1", odrive->m1->getVelEstimateInRads());
+        
+        graph_logger->appendToBuffer("ODrive real current m0", odrive->m0->getCurrent());
+        graph_logger->appendToBuffer("ODrive real current m1", odrive->m1->getCurrent());
 
         auto elapsed = std::chrono::high_resolution_clock::now() - start;
         long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
