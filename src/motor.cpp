@@ -232,11 +232,10 @@ void Motor::setTorqueDoublePendulum(float torque)
         float current = -torque * this->kV / 8.27f;
         channel->odriveEndpointSetFloat(M0_CONTROLLER_CURRENT_SETPOINT, current);
     }else{
-        float current = torque * this->kV / 8.27f;
+        float current = -torque * this->kV / 8.27f;
         channel->odriveEndpointSetFloat(M1_CONTROLLER_CURRENT_SETPOINT, current);
     }
 }
-
 
 void Motor::setOtherMotor(Motor * otherMotor)
 {

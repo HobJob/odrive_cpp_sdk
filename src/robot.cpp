@@ -272,8 +272,6 @@ void Robot::executeTrajectoryOpenLoop(std::vector<Eigen::VectorXd> us, Graph_Log
     auto odrive = this->odrives[0];
     int us_size = us[0].size();
 
-    std::cout << "Us size is " << us[0][0] << " " << us[0][1] << std::endl;
-
     odrive->m0->setControlMode(CTRL_MODE_CURRENT_CONTROL);
     odrive->m0->setRequestedState(AXIS_STATE_CLOSED_LOOP_CONTROL);
 
@@ -285,17 +283,17 @@ void Robot::executeTrajectoryOpenLoop(std::vector<Eigen::VectorXd> us, Graph_Log
         
         auto start = std::chrono::high_resolution_clock::now();
         
-        odrive->m0->setTorque(u[1]);
+        odrive->m0->setTorqueDoublePendulum(u[1]);
         
         if(us_size != 1){
-            odrive->m1->setTorque(u[0]);
+            odrive->m1->setTorqueDoublePendulum(u[0]);
         }
         
         graph_logger->appendToBuffer("computed currents m0", odrive->m0->castTorqueToCurrent(u[1]));
         graph_logger->appendToBuffer("computed currents m1", odrive->m1->castTorqueToCurrent(u[0]));
         
-        graph_logger->appendToBuffer("ODrive real position m0", odrive->m0->getPosEstimateInRad());
-        graph_logger->appendToBuffer("ODrive real position m1", odrive->m1->getPosEstimateInRad());
+        graph_logger->appendToBuffer("ODrive real position m0", odrive->m0->getPosEstimateInRadDoublePendulum());
+        graph_logger->appendToBuffer("ODrive real position m1", odrive->m1->getPosEstimateInRadDoublePendulum());
 
         graph_logger->appendToBuffer("ODrive real velocity m0", odrive->m0->getVelEstimateInRads());
         graph_logger->appendToBuffer("ODrive real velocity m1", odrive->m1->getVelEstimateInRads());

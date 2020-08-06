@@ -43,11 +43,10 @@ void ODrive::getJSON(){
 void ODrive::addMotor(Motor *m){
     if (m->name == M0){
         this->m0 = m;
-        this->m0->channel = channel;
     }else{
         this->m1 = m;
-        this->m1->channel = channel;
     }
+    m->channel = channel;
 }
 
 
@@ -92,7 +91,7 @@ void ODrive::configureMotor(Motor *m) {
         channel->odriveEndpointSetInt(M1_ENCODER_CONFIG_CPR,m->encoder_cpr);
 
         //And limit speed to 20 rev/s
-        channel->odriveEndpointSetFloat(AXIS1_CONTROLLER_CONFIG_VEL_LIMIT, m->encoder_cpr * 4);
+        channel->odriveEndpointSetFloat(AXIS1_CONTROLLER_CONFIG_VEL_LIMIT, ((float)m->encoder_cpr) * 10.0f);
     }
 }
 
