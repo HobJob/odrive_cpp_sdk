@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include "channel.h"
+#include <stdlib.h> 
 
 //From enums.py
 #define MOTOR_TYPE_HIGH_CURRENT 0
@@ -24,7 +25,7 @@ public:
         int max_current = 25,
         float kV = 330.0f,
         float calibration_current = 5,
-        float current_limit = 5,
+        float current_limit = 15,
         int motor_type = MOTOR_TYPE_HIGH_CURRENT);
     
     ~Motor();
@@ -40,7 +41,7 @@ public:
     int max_current; //25
     float kV; //330
     float calibration_current; //5
-    float current_limit; //5
+    float current_limit; //15
     void disable();
 
     int motor_type;
@@ -66,10 +67,20 @@ public:
     void setControlMode(int controlMode);
 
     void enable();
+    
+    void moveStartingPosition(double delayBetweenSteps);
 
     int requestedState;
 
     void setPositionSetpoint(float newSetpoint);
+
+    uint16_t help();
+
+    void setTorque(float d);
+
+
+    float castCurrentToTorque(float current);
+    float castTorqueToCurrent(float torque);
 };
 
 #endif //MOTOR_TFG_ADRIA

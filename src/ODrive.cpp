@@ -40,6 +40,16 @@ void ODrive::getJSON(){
     std::cout << "JSON is : " << a[0] << std::endl;
 }
 
+void ODrive::addMotor(Motor *m){
+    if (m->name == M0){
+        this->m0 = m;
+        this->m0->channel = channel;
+    }else{
+        this->m1 = m;
+        this->m1->channel = channel;
+    }
+}
+
 
 //TODO: REFACTOR ALL THE #DEFINE thing. Use instead the JSON and a helper function to look for the correct endpoint ID.
 void ODrive::configureMotor(Motor *m) {
@@ -60,7 +70,7 @@ void ODrive::configureMotor(Motor *m) {
         channel->odriveEndpointSetInt(M0_ENCODER_CONFIG_CPR,m->encoder_cpr);
 
         //And limit speed to 20 rev/s
-        channel->odriveEndpointSetFloat(AXIS0_CONTROLLER_CONFIG_VEL_LIMIT, m->encoder_cpr * 4);
+        channel->odriveEndpointSetFloat(AXIS0_CONTROLLER_CONFIG_VEL_LIMIT, ((float)m->encoder_cpr) * 10.0f);
 
     }else{
         this->m1 = m;
@@ -88,14 +98,15 @@ void ODrive::configureMotor(Motor *m) {
 //It is recommended that you mechanically disengage the motor from anything other than the encoder, so it can spin freely
 void ODrive::calibrateMotorsAndEncoders(){
 
+    uint8_t isCalibrated;
 
-     if(m0){
+    if(m0){
         std::cout << "Starting calibration of motor 0" << std::endl;
         //Motor calibration
         channel->odriveEndpointSetInt(M0_REQUESTED_STATE, AXIS_STATE_MOTOR_CALIBRATION);
 
         //Wait until the calib. ends
-        channel->wait(M0_CURRENT_STATE, AXIS_STATE_IDLE);
+        channel->waituint8(M0_CURRENT_STATE, AXIS_STATE_IDLE);
 
         //Save the motor calibration. This way we can skip this process on boot.
         channel->odriveEndpointSetUInt8(M0_CONFIG_PRE_CALIBRATED, 1);
@@ -107,16 +118,15 @@ void ODrive::calibrateMotorsAndEncoders(){
 
         channel->odriveEndpointSetInt(M0_REQUESTED_STATE, AXIS_STATE_ENCODER_INDEX_SEARCH);
         //Wait until the calib. ends
-        channel->wait(M0_CURRENT_STATE, AXIS_STATE_IDLE);
+        channel->waituint8(M0_CURRENT_STATE, AXIS_STATE_IDLE);
 
         channel->odriveEndpointSetInt(M0_REQUESTED_STATE, AXIS_STATE_ENCODER_OFFSET_CALIBRATION);
         //Wait until the calib. ends
-        channel->wait(M0_CURRENT_STATE, AXIS_STATE_IDLE);
+        channel->waituint8(M0_CURRENT_STATE, AXIS_STATE_IDLE);
 
         //Save the encoder calibration. This way we can skip this process on boot.
         channel->odriveEndpointSetUInt8(M0_ENCODER_CONFIG_PRE_CALIBRATED, 1);
 
-        uint8_t isCalibrated;
         //Check if calibration went well
         channel->odriveEndpointGetUInt8(M0_ENCODER_CONFIG_PRE_CALIBRATED, isCalibrated);
         std::cout << "Calibration of motor 0 " << (isCalibrated == 1 ? "successful" : "failed") << std::endl;
@@ -128,7 +138,7 @@ void ODrive::calibrateMotorsAndEncoders(){
         //Motor calibration
         channel->odriveEndpointSetInt(M1_REQUESTED_STATE, AXIS_STATE_MOTOR_CALIBRATION);
         //Wait until the calib. ends
-        channel->wait(M1_CURRENT_STATE, AXIS_STATE_IDLE);
+        channel->waituint8(M1_CURRENT_STATE, AXIS_STATE_IDLE);
 
         //Save the motor calibration. This way we can skip this process on boot.
         channel->odriveEndpointSetUInt8(M1_CONFIG_PRE_CALIBRATED, 1);
@@ -138,11 +148,11 @@ void ODrive::calibrateMotorsAndEncoders(){
         channel->odriveEndpointSetUInt8(M1_ENCODER_CONFIG_USE_INDEX,1);
         channel->odriveEndpointSetInt(M1_REQUESTED_STATE, AXIS_STATE_ENCODER_INDEX_SEARCH);
         //Wait until the calib. ends
-        channel->wait(M1_CURRENT_STATE, AXIS_STATE_IDLE);
+        channel->waituint8(M1_CURRENT_STATE, AXIS_STATE_IDLE);
 
         channel->odriveEndpointSetInt(M1_REQUESTED_STATE, AXIS_STATE_ENCODER_OFFSET_CALIBRATION);
         //Wait until the calib. ends
-        channel->wait(M1_CURRENT_STATE, AXIS_STATE_IDLE);
+        channel->waituint8(M1_CURRENT_STATE, AXIS_STATE_IDLE);
 
         //Save the encoder calibration. This way we can skip this process on boot.
         channel->odriveEndpointSetUInt8(M1_ENCODER_CONFIG_PRE_CALIBRATED, 1);

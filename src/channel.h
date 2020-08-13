@@ -64,6 +64,7 @@
 #define M0_CURRENT_STATE 54
 #define M0_REQUESTED_STATE 55
 
+#define M0_MOTOR_IS_CALIBRATED 79
 #define M0_CURRENT_CONTROL_P_GAIN 88
 #define M0_CURRENT_CONTROL_I_GAIN 89
 #define M0_CURRENT_CONTROL_IQ_SETPOINT 95
@@ -74,6 +75,7 @@
 #define M0_CONFIG_CALIBRATION_CURRENT 113
 #define M0_CONFIG_MOTOR_TYPE 118
 #define M0_CONFIG_CURRENT_LIM 119
+#define M0_CONTROLLER_CURRENT_SETPOINT 128
 #define M0_POS_ESTIMATE 161
 #define M0_ENCODER_VEL_ESTIMATE 164
 #define M0_ENCODER_CONFIG_USE_INDEX 167
@@ -83,6 +85,7 @@
 #define M1_CURRENT_STATE 197
 #define M1_REQUESTED_STATE 198
 
+#define M1_MOTOR_IS_CALIBRATED 222
 #define M1_CURRENT_CONTROL_P_GAIN 231
 #define M1_CURRENT_CONTROL_I_GAIN 232
 #define M1_CURRENT_CONTROL_IQ_SETPOINT 238
@@ -93,6 +96,7 @@
 #define M1_CONFIG_CALIBRATION_CURRENT 256
 #define M1_CONFIG_MOTOR_TYPE 261
 #define M1_CONFIG_CURRENT_LIM 262
+#define M1_CONTROLLER_CURRENT_SETPOINT 271
 #define M1_POS_ESTIMATE 304
 #define M1_ENCODER_CONFIG_USE_INDEX 310
 #define M1_ENCODER_CONFIG_PRE_CALIBRATED 312
@@ -122,6 +126,7 @@
 #include <libusb-1.0/libusb.h>
 #include <endian.h>
 #include <unistd.h>
+#include <mutex>
 
 typedef std::vector<uint8_t> commBuffer;
 
@@ -149,10 +154,14 @@ public:
 
     int odriveEndpointSetUInt8(int endpoint_id, const uint8_t &value);
 
-    void wait(int endpoint, int newValue);
+    void waituint8(int endpoint, uint8_t newValue);
+    int odriveEndpointGetUInt16(int endpoint_id, uint16_t &value);
 
+    void waitOperationFinisheduint8(int endpoint, uint8_t newValue);
 private:
     /*Adria*/
+
+    std::mutex tx_mutex;
 
     short outbound_seq_no_; // unique ids for packets send to odrive
 
@@ -171,6 +180,7 @@ private:
 
     static commBuffer createODrivePacket(short seq_no, int endpoint, short response_size, const commBuffer& payload_ref);
     static commBuffer decodeODrivePacket(commBuffer& buf, short& seq_no, commBuffer& received_packet);
+
 
 };
 

@@ -9,6 +9,7 @@
 
 #include "channel.h"
 #include "ODrive.h"
+#include <chrono>
 
 class ODrive;
 
@@ -22,15 +23,18 @@ public:
     int reconnectODrive(ODrive *oldOdrive);
 
     void configureODrive(ODrive *&pDrive, Motor *pMotor, Motor *pMotor1);
+    
+    void moveWithCurrent(std::vector<double> us);
+    void moveWithPosition(std::vector<double> xs);
+    void set_dt(double dt);
 
 private:
 
     //USB stuff
     libusb_context* libusb_context_;
+    double dt;
 
     int lookAndCreateODrives();
-
-
 };
 
 

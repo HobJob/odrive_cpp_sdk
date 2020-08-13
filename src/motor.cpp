@@ -22,8 +22,34 @@ Motor::~Motor(){
 
 }
 
+void Motor::moveStartingPosition(double delayBetweenSteps)
+{
+    float pos;
+    channel->odriveEndpointGetFloat(this->name == M0 ? M0_POS_ESTIMATE : M1_POS_ESTIMATE,pos);   
+    
+
+    int sign = (pos > 0) - (pos < 0);
+
+    int steps = (abs(pos) / this->encoder_cpr) * 8;
+    std::cout << "Initial position is " << pos << " Sign is " << sign << " NSteps are " << steps << std::endl;
+    
+    if(steps == 0){
+        channel->odriveEndpointSetFloat(this->name == M0 ? AXIS0_CONTROLLER_POS_SETPOINT : AXIS1_CONTROLLER_POS_SETPOINT, 0.0f);
+        return;   
+    }
+
+    float newPos = 0;
+    for(auto i = steps; i >= 0; i--){
+        
+        newPos = (pos * i) / (steps);
+        std::cout << "Sending a newpos is " << newPos<<  std::endl;
+        channel->odriveEndpointSetFloat(this->name == M0 ? AXIS0_CONTROLLER_POS_SETPOINT : AXIS1_CONTROLLER_POS_SETPOINT, newPos);   
+        usleep((delayBetweenSteps * 1000.0f));
+    }
+}
+
 void Motor::setCurrentSetpoint(float newSetpoint){
-    channel->odriveEndpointSetFloat(this->name == M0 ? M0_CURRENT_CONTROL_IQ_SETPOINT : M1_CURRENT_CONTROL_IQ_SETPOINT, newSetpoint);
+    channel->odriveEndpointSetFloat(this->name == M0 ? M0_CONTROLLER_CURRENT_SETPOINT : M1_CONTROLLER_CURRENT_SETPOINT, newSetpoint);
 }
 
 void Motor::setCurrentControllerPGain(float newGain){
@@ -50,6 +76,16 @@ float Motor::getCurrent(){
     float current;
     channel->odriveEndpointGetFloat(this->name == M0 ? M0_CURRENT_CONTROL_IQ_MEASURED : M1_CURRENT_CONTROL_IQ_MEASURED, current);
     return current;
+}
+
+float Motor::castTorqueToCurrent(float torque)
+{
+    return (torque * this->kV) / 8.27;
+}
+
+float Motor::castCurrentToTorque(float current)
+{
+    return (8.27f * current) / this->kV;   
 }
 
 float Motor::getTorque(){
@@ -83,4 +119,10 @@ void Motor::disable() {
 
 void Motor::setPositionSetpoint(float newSetpoint) {
     channel->odriveEndpointSetFloat(this->name == M0 ? AXIS0_CONTROLLER_POS_SETPOINT : AXIS1_CONTROLLER_POS_SETPOINT, newSetpoint);
+}
+
+void Motor::setTorque(float torque) {
+    float current = torque * this->kV / 8.27;
+    std::cout << "Current is " << current << std::endl;
+    channel->odriveEndpointSetFloat(this->name == M0 ? M0_CONTROLLER_CURRENT_SETPOINT : M1_CONTROLLER_CURRENT_SETPOINT, current);
 }

@@ -3,7 +3,7 @@
 
 
 //600000 works fine too.
-#define REBOOT_SLEEP_TIME 750000
+#define REBOOT_SLEEP_TIME 5000000
 
 #include <libusb-1.0/libusb.h>
 #include "motor.h"
@@ -13,6 +13,7 @@
 #include <unistd.h>
 
 class Robot;
+
 
 class ODrive{
 public:
@@ -24,6 +25,9 @@ public:
     Motor *m1;
 
     uint64_t serialNumber;
+
+    void setBusy(bool newState);
+    bool isBusy();
 
     int readSerialNumber(uint64_t &serial_number);
 
@@ -45,7 +49,7 @@ public:
     void calibrateMotorsAndEncoders();
 
     void configStartupSequence();
-
+    void addMotor(Motor *m);
 private:
     float brake_resistance;
 
@@ -55,6 +59,8 @@ private:
     Robot *robot;
 
     float getPosEstimate(MOTOR_NAME m);
+
+
 };
 
 #endif //ODRIVE_TFG_ADRIA
