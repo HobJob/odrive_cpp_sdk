@@ -1,11 +1,19 @@
 #include "robot.h"
 
-
-Robot::Robot(){
+Robot::Robot(double dt){
+    this->dt = dt;
     libusb_context_ = nullptr;
-
     int result = lookAndCreateODrives();
 
+    if (result < 0) {
+        std::cerr << "Error creating odrives" << std::endl;
+    }
+}
+Robot::Robot(){
+    
+    libusb_context_ = nullptr;
+    int result = lookAndCreateODrives();
+    dt = 0;
     if (result < 0) {
         std::cerr << "Error creating odrives" << std::endl;
     }
@@ -224,8 +232,8 @@ void Robot::configureODrive(ODrive *&odrive, Motor *m0, Motor *m1) {
     odrive->setBrakeResistance(0.5);
 
     //Configure both motors
-    odrive->configureMotor(m0);
-    //odrive->configureMotor(m1);
+    if(m0) odrive->configureMotor(m0);
+    if(m1) odrive->configureMotor(m1);
 
     //Calibrate the motors
     odrive->calibrateMotorsAndEncoders();
@@ -257,16 +265,41 @@ void Robot::moveWithPosition(std::vector<double> xs)
         usleep((dt * 1000000.0f) - ((float)microseconds));
     }
 }
-void Robot::moveWithCurrent(std::vector<double> us)
+
+void Robot::executeTrajectoryOpenLoop(std::vector<Eigen::VectorXd> us, Graph_Logger* graph_logger)
 {
     auto odrive = this->odrives[0];
+    int us_size = us[0].size();
+
     odrive->m0->setControlMode(CTRL_MODE_CURRENT_CONTROL);
     odrive->m0->setRequestedState(AXIS_STATE_CLOSED_LOOP_CONTROL);
-    for(auto u : us){
+
+    if(us_size != 1)
+        odrive->m1->setControlMode(CTRL_MODE_CURRENT_CONTROL);
+        odrive->m1->setRequestedState(AXIS_STATE_CLOSED_LOOP_CONTROL);
+
+    for(auto &u : us){
         
         auto start = std::chrono::high_resolution_clock::now();
-        odrive->m0->setTorque(u);
-    
+        
+        odrive->m0->setTorqueDoublePendulum(u[1]);
+        
+        if(us_size != 1){
+            odrive->m1->setTorqueDoublePendulum(u[0]);
+        }
+        
+        graph_logger->appendToBuffer("computed currents m0", odrive->m0->castTorqueToCurrent(u[1]));
+        graph_logger->appendToBuffer("computed currents m1", odrive->m1->castTorqueToCurrent(u[0]));
+        
+        graph_logger->appendToBuffer("ODrive real position m0", odrive->m0->getPosEstimateInRadDoublePendulum());
+        graph_logger->appendToBuffer("ODrive real position m1", odrive->m1->getPosEstimateInRadDoublePendulum());
+
+        graph_logger->appendToBuffer("ODrive real velocity m0", odrive->m0->getVelEstimateInRads());
+        graph_logger->appendToBuffer("ODrive real velocity m1", odrive->m1->getVelEstimateInRads());
+        
+        graph_logger->appendToBuffer("ODrive real current m0", odrive->m0->getCurrent());
+        graph_logger->appendToBuffer("ODrive real current m1", odrive->m1->getCurrent());
+
         auto elapsed = std::chrono::high_resolution_clock::now() - start;
         long long microseconds = std::chrono::duration_cast<std::chrono::microseconds>(elapsed).count();
         usleep((dt * 1000000.0f) - ((float)microseconds));

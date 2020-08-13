@@ -75,6 +75,8 @@
 #define M0_CONFIG_CALIBRATION_CURRENT 113
 #define M0_CONFIG_MOTOR_TYPE 118
 #define M0_CONFIG_CURRENT_LIM 119
+#define M0_CONFIG_MOTOR_REQUESTED_CURRENT_RANGE 122
+
 #define M0_CONTROLLER_CURRENT_SETPOINT 128
 #define M0_POS_ESTIMATE 161
 #define M0_ENCODER_VEL_ESTIMATE 164
@@ -96,6 +98,8 @@
 #define M1_CONFIG_CALIBRATION_CURRENT 256
 #define M1_CONFIG_MOTOR_TYPE 261
 #define M1_CONFIG_CURRENT_LIM 262
+#define M1_CONFIG_MOTOR_REQUESTED_CURRENT_RANGE 265
+
 #define M1_CONTROLLER_CURRENT_SETPOINT 271
 #define M1_POS_ESTIMATE 304
 #define M1_ENCODER_CONFIG_USE_INDEX 310
@@ -180,8 +184,6 @@ private:
 
     static commBuffer createODrivePacket(short seq_no, int endpoint, short response_size, const commBuffer& payload_ref);
     static commBuffer decodeODrivePacket(commBuffer& buf, short& seq_no, commBuffer& received_packet);
-
-
 };
 
 

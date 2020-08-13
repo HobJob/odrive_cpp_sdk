@@ -43,16 +43,16 @@ void ODrive::getJSON(){
 void ODrive::addMotor(Motor *m){
     if (m->name == M0){
         this->m0 = m;
-        this->m0->channel = channel;
     }else{
         this->m1 = m;
-        this->m1->channel = channel;
     }
+    m->channel = channel;
 }
 
 
-//TODO: REFACTOR ALL THE #DEFINE thing. Use instead the JSON and a helper function to look for the correct endpoint ID.
 void ODrive::configureMotor(Motor *m) {
+    if(!m) return;
+    
     if (m->name == M0){
         this->m0 = m;
         this->m0->channel = channel;
@@ -65,6 +65,7 @@ void ODrive::configureMotor(Motor *m) {
         channel->odriveEndpointSetFloat(M0_CONFIG_CALIBRATION_CURRENT, m->calibration_current);
         channel->odriveEndpointSetUInt8(M0_CONFIG_MOTOR_TYPE, m->motor_type);
         channel->odriveEndpointSetInt(M0_CONFIG_POLE_PAIRS, m->pole_pairs);
+        channel->odriveEndpointSetFloat(M0_CONFIG_MOTOR_REQUESTED_CURRENT_RANGE, m->current_range);
 
         //Configure odrv0.axis0.encoder...
         channel->odriveEndpointSetInt(M0_ENCODER_CONFIG_CPR,m->encoder_cpr);
@@ -79,18 +80,18 @@ void ODrive::configureMotor(Motor *m) {
         //Stop the motor.
         channel->odriveEndpointSetInt(M1_REQUESTED_STATE, AXIS_STATE_IDLE);
 
-        //Configure odrv0.axis0.motor...
+        //Configure odrv0.axis1.motor...
         channel->odriveEndpointSetFloat(M1_CONFIG_CURRENT_LIM, m->current_limit);
         channel->odriveEndpointSetFloat(M1_CONFIG_CALIBRATION_CURRENT, m->calibration_current);
-
         channel->odriveEndpointSetUInt8(M1_CONFIG_MOTOR_TYPE, m->motor_type);
         channel->odriveEndpointSetInt(M1_CONFIG_POLE_PAIRS, m->pole_pairs);
+        channel->odriveEndpointSetFloat(M1_CONFIG_MOTOR_REQUESTED_CURRENT_RANGE, m->current_range);
 
         //Configure odrv0.axis0.encoder...
         channel->odriveEndpointSetInt(M1_ENCODER_CONFIG_CPR,m->encoder_cpr);
 
         //And limit speed to 20 rev/s
-        channel->odriveEndpointSetFloat(AXIS1_CONTROLLER_CONFIG_VEL_LIMIT, m->encoder_cpr * 4);
+        channel->odriveEndpointSetFloat(AXIS1_CONTROLLER_CONFIG_VEL_LIMIT, ((float)m->encoder_cpr) * 10.0f);
     }
 }
 
@@ -195,6 +196,7 @@ void ODrive::reboot(){
     //Give some time to the ODrive to boot again.
     std::cout<< "Rebooting ODrive... Sleeping for " << REBOOT_SLEEP_TIME <<std::endl;
     usleep(REBOOT_SLEEP_TIME);
+    std::cout << "Wait done. Reconnecting..." << std::endl;
     robot->reconnectODrive(this);
 }
 
